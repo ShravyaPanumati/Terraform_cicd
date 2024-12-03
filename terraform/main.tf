@@ -1,5 +1,5 @@
 provider "google" {
-  project = "YOUR_PROJECT_ID"
+  project = "strategic-reef-435523-j1"
   region  = "us-central1"
   zone    = "us-central1-a"
 }
