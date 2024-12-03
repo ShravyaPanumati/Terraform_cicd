@@ -5,17 +5,17 @@ steps:
 
 # Step 2: Plan Terraform deployment
 - name: 'hashicorp/terraform'
-  args: ['plan', '-var', 'project_id=$PROJECT_ID', '-var', 'region=$REGION']
+  args: ['plan', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
   env:
-  - 'PROJECT_ID=your-gcp-project-id'
-  - 'REGION=us-central1'
+  - '_PROJECT_ID=$_PROJECT_ID'
+  - '_REGION=$_REGION'
 
 # Step 3: Apply Terraform changes
 - name: 'hashicorp/terraform'
-  args: ['apply', '-auto-approve', '-var', 'project_id=$PROJECT_ID', '-var', 'region=$REGION']
+  args: ['apply', '-auto-approve', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
   env:
-  - 'PROJECT_ID=strategic-reef-435523-j1'
-  - 'REGION=us-central1'
+  - '_PROJECT_ID=$_PROJECT_ID'
+  - '_REGION=$_REGION'
 
 # Step 4: Install Python dependencies and run Flask app
 - name: 'gcr.io/cloud-builders/python'
