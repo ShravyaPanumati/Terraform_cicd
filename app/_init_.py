@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-# Initialize Flask app and SQLAlchemy
+# Initialize Flask app and a SQLAlchemy
 app = Flask(__name__)
 
 # Set up SQLAlchemy database URI (use Cloud SQL instance details)
