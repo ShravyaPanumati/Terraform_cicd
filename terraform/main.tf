@@ -1,31 +1,12 @@
-provider "google" {
-  project = "strategic-reef-435523-j1"
-  region  = "us-central1"
-  zone    = "us-central1-a"
-}
-
-# Create a Cloud SQL MySQL instance
-resource "google_sql_database_instance" "default" {
-  name             = "flask-sql-db"
-  database_version = "MYSQL_8_0"
-  region           = "us-central1"
-
-  root_password = "your_password"
-
-  settings {
-    tier = "db-f1-micro"
-  }
-}
-
-# Create a Compute Engine instance to host the Flask app
 resource "google_compute_instance" "flask-app" {
   name         = "flask-app-instance"
   machine_type = "f1-micro"
   zone         = "us-central1-a"
+  project      = "strategic-reef-435523-j1"
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-10"
+      image = "debian-cloud/debian-11"  # Use a more recent Debian image
     }
   }
 
