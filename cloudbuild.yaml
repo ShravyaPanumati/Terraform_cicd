@@ -2,10 +2,12 @@ steps:
 # Step 1: Initialize Terraform
 - name: 'hashicorp/terraform'
   args: ['init']
+  dir: 'terraform'  # Change 'terraform' to the directory containing your .tf files
 
 # Step 2: Plan Terraform deployment
 - name: 'hashicorp/terraform'
   args: ['plan', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
+  dir: 'terraform'  # Change 'terraform' to the directory containing your .tf files
   env:
   - '_PROJECT_ID=$_PROJECT_ID'
   - '_REGION=$_REGION'
@@ -13,6 +15,7 @@ steps:
 # Step 3: Apply Terraform changes
 - name: 'hashicorp/terraform'
   args: ['apply', '-auto-approve', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
+  dir: 'terraform'  # Change 'terraform' to the directory containing your .tf files
   env:
   - '_PROJECT_ID=$_PROJECT_ID'
   - '_REGION=$_REGION'
