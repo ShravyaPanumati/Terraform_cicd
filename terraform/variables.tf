@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "Your Google Cloud Project ID"
+  description = "strategic-reef-435523-j1"
   type        = string
 }
 
