@@ -5,7 +5,7 @@ provider "google" {
 
 # Resource for an existing Compute instance
 resource "google_compute_instance" "flask-app" {
-  name         = "flask-app"  # The name of your existing instance
+  name         = "flask-app"  # The name of existing instance
   machine_type = "f1-micro"   # Machine type (ensure this matches the existing instance)
 
   zone         = "us-central1-a"  # Zone where your instance is located
