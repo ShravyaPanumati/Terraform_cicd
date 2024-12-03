@@ -5,6 +5,7 @@ steps:
     args:
       - '-c'
       - |
+        cd terraform  # Change this if your Terraform files are in a different folder
         terraform init
         terraform plan
         terraform apply -auto-approve
