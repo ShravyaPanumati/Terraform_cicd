@@ -1,7 +1,7 @@
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
-  steps:
+steps:
 # Step 1: Initialize Terraform
 - name: 'hashicorp/terraform'
   args: ['init']
