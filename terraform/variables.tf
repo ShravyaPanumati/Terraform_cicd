@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "strategic-reef-435523-j1"
+  description = "The GCP project ID"
   type        = string
 }
 
