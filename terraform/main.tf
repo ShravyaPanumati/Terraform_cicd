@@ -30,7 +30,6 @@ sudo apt-get install -y python3-pip
 pip3 install flask
 EOT
 }
-}
 # Modify to manage the existing Cloud SQL instance
 resource "google_sql_database_instance" "default" {
   name             = "example-instance"  # Name of the existing Cloud SQL instance
