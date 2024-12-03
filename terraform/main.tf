@@ -3,15 +3,25 @@ provider "google" {
   region  = var.region
 }
 
-# Modify to manage the existing instance
+# Resource for an existing Compute instance
 resource "google_compute_instance" "flask-app" {
-  name         = "flask-app"  # Name of the existing instance
-  machine_type = "f1-micro"   # You can keep the original type if it's the same
+  name         = "flask-app"  # The name of your existing instance
+  machine_type = "f1-micro"   # Machine type (ensure this matches the existing instance)
 
-  zone         = "us-central1-a"  # Zone where your instance exists
+  zone         = "us-central1-a"  # Zone where your instance is located
 
-  # Note: Remove disk and network settings if the instance already has a configuration
-  # These should match the current settings of the existing instance, not change them.
+  # Define network interface (This is required, even for an existing instance)
+  network_interface {
+    network = "default"
+    access_config {}  # External IP
+  }
+
+  # Define boot disk (This is required, even for an existing instance)
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"  # Ensure this matches the existing instance's disk image
+    }
+  }
 
   metadata_startup_script = <<EOT
 #!/bin/bash
@@ -19,6 +29,7 @@ sudo apt-get update
 sudo apt-get install -y python3-pip
 pip3 install flask
 EOT
+}
 }
 # Modify to manage the existing Cloud SQL instance
 resource "google_sql_database_instance" "default" {
