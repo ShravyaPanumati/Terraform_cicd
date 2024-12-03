@@ -22,15 +22,14 @@ steps:
   env:
   - '_PROJECT_ID=$_PROJECT_ID'
   - '_REGION=$_REGION'
-
 # Step 4: Install Python dependencies and run Flask app
-- name: 'gcr.io/cloud-builders/python'
+- name: 'gcr.io/cloud-builders/python:3.9'  # Specify a specific Python version like 3.9
   entrypoint: 'sh'
   args:
     - '-c'
     - |
       pip install -r requirements.txt
-      python app/run.py
+      python app/_init_.py
 
 timeout: 1200s # Set timeout for the build process
 options:
