@@ -1,6 +1,6 @@
 steps:
-  # Step 1: Install Terraform and initialize it
-  - name: 'hashicorp/terraform:light'
+  # Step 1: Initialize Terraform and apply the plan
+  - name: 'hashicorp/terraform'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -23,4 +23,3 @@ options:
   logging: GCS_ONLY
 
 logsBucket: gs://todo-app-build-logs-strategic-reef-435523
-
