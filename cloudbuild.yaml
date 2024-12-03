@@ -1,0 +1,21 @@
+steps:
+  # Step 1: Install Terraform and initialize it
+  - name: 'hashicorp/terraform:light'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        terraform init
+        terraform plan
+        terraform apply -auto-approve
+
+  # Step 2: Install Python dependencies and run the Flask app
+  - name: 'gcr.io/cloud-builders/python'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install -r requirements.txt
+        python app/run.py
+
+timeout: 1200s
