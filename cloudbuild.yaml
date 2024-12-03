@@ -19,3 +19,8 @@ steps:
         python app/run.py
 
 timeout: 1200s
+options:
+  logging: GCS_ONLY
+
+logsBucket: gs://todo-app-build-logs-strategic-reef-435523
+
