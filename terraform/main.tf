@@ -30,15 +30,18 @@ sudo apt-get install -y python3-pip
 pip3 install flask
 EOT
 }
-# Modify to manage the existing Cloud SQL instance
 resource "google_sql_database_instance" "default" {
-  #name             = "example-instance"  # Name of the existing Cloud SQL instance
-  database_version = "MYSQL_5_7"         # The version should match the existing instance's version
-  name     = var.db_name
-  instance = "example-instance" 
+  name             = "example-instance"  # Name of the Cloud SQL instance
+  database_version = "MYSQL_5_7"         # MySQL version
   region           = var.region
 
   settings {
-    tier = "db-f1-micro"  # Make sure this matches the tier of the existing instance
+    tier = "db-f1-micro"  # Ensure this matches your desired machine type
   }
+}
+
+# Define the database within the Cloud SQL instance
+resource "google_sql_database" "default" {
+  name     = var.db_name                    # Use variable for database name
+  instance = google_sql_database_instance.default.name  # Reference the instance
 }
