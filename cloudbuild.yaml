@@ -29,6 +29,12 @@ steps:
   args:
     - '-c'
     - |
+      export DB_USERNAME=root
+      export DB_PASSWORD=password123
+      export DB_NAME=flask_db
+      export DB_PROJECT_ID=strategic-reef-435523-j1
+      export DB_REGION=us-central1
+      export DB_INSTANCE_NAME=example-instance
       pip install -r app/requirements.txt
       python app/_init_.py
 
