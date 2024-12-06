@@ -32,8 +32,10 @@ EOT
 }
 # Modify to manage the existing Cloud SQL instance
 resource "google_sql_database_instance" "default" {
-  name             = "example-instance"  # Name of the existing Cloud SQL instance
+  #name             = "example-instance"  # Name of the existing Cloud SQL instance
   database_version = "MYSQL_5_7"         # The version should match the existing instance's version
+  name     = var.db_name
+  instance = google_sql_database_instance.default.name
   region           = var.region
 
   settings {
