@@ -29,7 +29,7 @@ steps:
   args:
     - '-c'
     - |
-      pip install -r requirements.txt
+      pip install -r app/requirements.txt
       python app/_init_.py
 
 timeout: 1200s # Set timeout for the build process
