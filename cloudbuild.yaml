@@ -29,6 +29,7 @@ steps:
   args:
     - '-c'
     - |
+      python3 -m venv venv
       export DB_USERNAME=root
       export DB_PASSWORD=password123
       export DB_NAME=flask_db
