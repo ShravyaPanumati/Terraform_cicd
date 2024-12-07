@@ -37,7 +37,7 @@ steps:
       export DB_REGION=us-central1
       export DB_INSTANCE_NAME=example-instance
       pip install -r app/requirements.txt
-      python app/_init_.py
+      python run.py
 
 timeout: 1200s # Set timeout for the build process
 options:
