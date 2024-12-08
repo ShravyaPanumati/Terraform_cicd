@@ -9,12 +9,12 @@ steps:
 
 # Step 2: Plan Terraform deployment
 - name: 'hashicorp/terraform'
-  args: ['plan', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
+  args: ['plan', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION", '-var', "zone=us-central1-a"]
   dir: 'terraform'
 
 # Step 3: Apply Terraform changes
 - name: 'hashicorp/terraform'
-  args: ['apply', '-auto-approve', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION"]
+  args: ['apply', '-auto-approve', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION", '-var', "zone=us-central1-a"]
   dir: 'terraform'
 
 # Step 4: Install Python dependencies and run Flask app
