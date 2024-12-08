@@ -1,6 +1,6 @@
 provider "google" {
-  project = "strategic-reef-435523-j1"
-  region  = "us-central1"
+  project = var.project_id  # Replace hardcoded project ID with variable
+  region  = var.region      # Replace hardcoded region with variable
 }
 
 resource "google_sql_database_instance" "default" {
