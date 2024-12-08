@@ -38,6 +38,8 @@ steps:
       export DB_INSTANCE_NAME=example-instance
       pip install -r app/requirements.txt
       python run.py
+      sleep 10  # Allow Flask to initialize
+      pkill -f "python run.py"  # Stop the Flask server
 
 timeout: 1200s # Set timeout for the build process
 options:
