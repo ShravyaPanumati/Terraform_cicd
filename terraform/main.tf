@@ -1,6 +1,6 @@
 provider "google" {
-  project = var.project_id  # Replace hardcoded project ID with variable
-  region  = var.region      # Replace hardcoded region with variable
+  project = var.project_id
+  region  = var.region
 }
 
 resource "google_sql_database_instance" "default" {
@@ -29,6 +29,7 @@ resource "google_compute_network" "default" {
 resource "google_compute_instance" "default" {
   name         = "flask-app"
   machine_type = "e2-micro"
+  zone         = var.zone  # Add zone here
 
   boot_disk {
     initialize_params {
