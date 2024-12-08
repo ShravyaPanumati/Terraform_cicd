@@ -23,22 +23,17 @@ steps:
   args:
     - '-c'
     - |
-      # Activate Python environment
       python3 -m venv venv
       source venv/bin/activate
-      
-      # Set environment variables for the app
+      pip install --upgrade pip
+      pip install -r app/requirements.txt
       export DB_USERNAME=root
       export DB_PASSWORD=password123
       export DB_NAME=flask_db
-      export DB_PROJECT_ID=$_PROJECT_ID
-      export DB_REGION=$_REGION
+      export DB_PROJECT_ID=strategic-reef-435523-j1
+      export DB_REGION=us-central1
       export DB_INSTANCE_NAME=example-instance
-      
-      # Install dependencies
-      pip install -r app/requirements.txt
-
-      # Run Flask app
+      export CLOUDSQL_CONNECTION_NAME=strategic-reef-435523-j1:us-central1:example-instance
       python run.py &
       sleep 10  # Allow Flask to initialize
       
