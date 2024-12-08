@@ -23,17 +23,17 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Load environment variables
-db_user = os.getenv('DB_USERNAME', 'default_user')  # Replace 'default_user' with a fallback
-db_password = os.getenv('DB_PASSWORD', 'default_password')  # Replace with a fallback
-db_name = os.getenv('DB_NAME', 'default_dbname')  # Replace with a fallback
+db_user = os.getenv('DB_USERNAME', 'default_user')
+db_password = os.getenv('DB_PASSWORD', 'default_password')
+db_name = os.getenv('DB_NAME', 'default_dbname')
 project_id = os.getenv('DB_PROJECT_ID')
 region = os.getenv('DB_REGION')
 instance_name = os.getenv('DB_INSTANCE_NAME')
 
 # Set up SQLAlchemy database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+pymysql://{db_user}:{db_password}@cloudsql/"
-    f"{project_id}:{region}:{instance_name}/{db_name}"
+    f"mysql+pymysql://{db_user}:{db_password}@/"
+    f"{db_name}?unix_socket=/cloudsql/{project_id}:{region}:{instance_name}"
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -41,3 +41,4 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 from app import routes
+
