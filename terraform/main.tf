@@ -1,47 +1,52 @@
 provider "google" {
-  project = var.project_id
-  region  = var.region
+  project = "strategic-reef-435523-j1"
+  region  = "us-central1"
 }
 
-# Resource for an existing Compute instance
-resource "google_compute_instance" "flask-app" {
-  name         = "flask-app"  # The name of existing instance
-  machine_type = "f1-micro"   # Machine type (ensure this matches the existing instance)
-
-  zone         = "us-central1-a"  # Zone where your instance is located
-
-  # Define network interface (This is required, even for an existing instance)
-  network_interface {
-    network = "default"
-    access_config {}  # External IP
+resource "google_sql_database_instance" "default" {
+  name             = "example-instance"
+  database_version = "MYSQL_8_0"
+  settings {
+    tier = "db-f1-micro"
   }
+}
 
-  # Define boot disk (This is required, even for an existing instance)
+resource "google_sql_database" "default" {
+  name     = "flask_db"
+  instance = google_sql_database_instance.default.name
+}
+
+resource "google_sql_user" "default" {
+  name     = "root"
+  instance = google_sql_database_instance.default.name
+  password = "password123"
+}
+
+resource "google_compute_network" "default" {
+  name = "flask-network"
+}
+
+resource "google_compute_instance" "default" {
+  name         = "flask-app"
+  machine_type = "e2-micro"
+
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-11"  # Ensure this matches the existing instance's disk image
+      image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
     }
   }
 
-  metadata_startup_script = <<EOT
-#!/bin/bash
-sudo apt-get update
-sudo apt-get install -y python3-pip
-pip3 install flask
-EOT
-}
-resource "google_sql_database_instance" "default" {
-  name             = "example-instance"  # Name of the Cloud SQL instance
-  database_version = "MYSQL_5_7"         # MySQL version
-  region           = var.region
-
-  settings {
-    tier = "db-f1-micro"  # Ensure this matches your desired machine type
+  network_interface {
+    network = google_compute_network.default.name
   }
-}
 
-# Define the database within the Cloud SQL instance
-resource "google_sql_database" "default" {
-  name     = var.db_name                    # Use variable for database name
-  instance = google_sql_database_instance.default.name  # Reference the instance
+  metadata = {
+    startup-script = <<EOT
+      #! /bin/bash
+      sudo apt-get update
+      sudo apt-get install -y python3 python3-pip
+      pip3 install -r /path/to/requirements.txt
+      python3 run.py
+    EOT
+  }
 }
