@@ -10,25 +10,18 @@ steps:
     id: "terraform-apply"
     args: [
       "apply",
-      "-auto-approve",
-      "-var", "project_id=$_PROJECT_ID",
-      "-var", "region=$_REGION",
-      "-var", "zone=$_ZONE"
+      "-auto-approve"
     ]
     dir: "terraform"
 
   # Step 3: Retrieve Terraform outputs (e.g., external IP of the newly created VM)
   - name: "hashicorp/terraform"
     id: "terraform-output"
-    args: [
-      "output",
-      "-json"
-    ]
-    dir: "terraform"
     entrypoint: "bash"
     args:
       - "-c"
       - |
+        # Save Terraform output as JSON to a file
         terraform output -json > /workspace/terraform_output.json
 
   # Step 4: Use the external IP in subsequent steps (e.g., testing accessibility)
@@ -47,11 +40,7 @@ steps:
         # Test application availability with curl
         curl -I http://$TERRAFORM_EXTERNAL_IP
 
-substitutions:
-  _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
-  _REGION: "us-central1"                   # Define your region
-  _ZONE: "us-central1-a"                   # Define your zone
-
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType:
+  machineType: "E2_HIGHCPU_8"
+timeout: "1200s"
