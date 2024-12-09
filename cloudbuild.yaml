@@ -1,46 +1,28 @@
+steps:
+# Step 1: Initialize and apply Terraform
+- name: "hashicorp/terraform"
+  args: ["init"]
+  dir: "terraform"
+
+- name: "hashicorp/terraform"
+  args: [
+    "apply",
+    "-auto-approve",
+    "-var", "project_id=$_PROJECT_ID",
+    "-var", "region=$_REGION"
+  ]
+  dir: "terraform"
+
+# Step 2: Upload application to GCS bucket
+- name: "gcr.io/cloud-builders/gsutil"
+  args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
+
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
-steps:
-# Step 1: Initialize Terraform
-- name: 'hashicorp/terraform'
-  args: ['init']
-  dir: 'terraform'
+  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
-# Step 2: Plan Terraform deployment
-- name: 'hashicorp/terraform'
-  args: ['plan', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION", '-var', "zone=us-central1-a"]
-  dir: 'terraform'
-
-# Step 3: Apply Terraform changes
-- name: 'hashicorp/terraform'
-  args: ['apply', '-auto-approve', '-var', "project_id=$_PROJECT_ID", '-var', "region=$_REGION", '-var', "zone=us-central1-a"]
-  dir: 'terraform'
-
-# Step 4: Install Python dependencies and run Flask app
-- name: 'python:3.10'
-  entrypoint: 'sh'
-  args:
-    - '-c'
-    - |
-      python3 -m venv venv
-      source venv/bin/activate
-      pip install --upgrade pip
-      pip install -r app/requirements.txt
-      export DB_USERNAME=root
-      export DB_PASSWORD=password123
-      export DB_NAME=flask_db
-      export DB_PROJECT_ID=strategic-reef-435523-j1
-      export DB_REGION=us-central1
-      export DB_INSTANCE_NAME=example-instance
-      export CLOUDSQL_CONNECTION_NAME=strategic-reef-435523-j1:us-central1:example-instance
-      python run.py &
-      sleep 10  # Allow Flask to initialize
-      
-      # Stop Flask app after testing
-      pkill -f "python run.py"
-
-timeout: 1200s # Set timeout for the build process
 options:
-  logging: GCS_ONLY
-logsBucket: gs://todo-app-build-logs-strategic-reef-435523
+  logging: CLOUD_LOGGING_ONLY
+  machineType: "N1_HIGHCPU_8"
+timeout: "1200s"
