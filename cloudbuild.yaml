@@ -15,25 +15,31 @@ steps:
   ]
   dir: "terraform"
 
-# Step 3: Retrieve the instance external IP from Terraform outputs
+# Step 3: Retrieve the external IP using gcloud command
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-instance-details"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
+      # Retrieve the external IP of the VM using gcloud command
+      EXTERNAL_IP=$(gcloud compute instances describe flask-app \
+        --project=${_PROJECT_ID} \
+        --zone=${_ZONE} \
+        --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
       # Save the external IP to a file
       echo $EXTERNAL_IP > /workspace/external_ip.txt
+      # Optionally, print the external IP for debugging
+      echo "Retrieved External IP: $EXTERNAL_IP"
 
-# Step 4: Display the application URL in build logs
+# Step 4: Use the external IP in a different way (e.g., curl)
 - name: "gcr.io/cloud-builders/curl"
   id: "test-application"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      # Read the external IP from the file and display the URL
+      # Read the external IP from the file and use it in a curl command
       EXTERNAL_IP=$(cat /workspace/external_ip.txt)
       echo "Your application is accessible at: http://$EXTERNAL_IP"
       curl -I http://$EXTERNAL_IP
@@ -42,6 +48,7 @@ substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
+  _INSTANCE_NAME: "flask-app"  # Replace with your actual instance name
 
 options:
   logging: CLOUD_LOGGING_ONLY
