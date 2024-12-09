@@ -1,31 +1,44 @@
-# Provider configuration
 provider "google" {
   project = var.project_id
   region  = var.region
+  zone    = var.zone
 }
 
-# Create a Google Cloud Storage bucket to host the application
-resource "google_storage_bucket" "static_site" {
-  name     = "${var.project_id}-static-site"
-  location = var.region
-  force_destroy = true
+resource "google_compute_network" "default" {
+  name = "flask-network"
+}
 
-  website {
-    main_page_suffix = "index.html"
+resource "google_compute_instance" "default" {
+  name         = "flask-app"
+  machine_type = "e2-micro"
+  zone         = var.zone
+
+  boot_disk {
+    initialize_params {
+      image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
+    }
+  }
+
+  network_interface {
+    network = google_compute_network.default.name
+    access_config {} # Enable external access
+  }
+
+  metadata = {
+    startup-script = <<EOT
+      #! /bin/bash
+      sudo apt-get update
+      sudo apt-get install -y python3 python3-pip
+      pip3 install -r /path/to/requirements.txt
+      python3 run.py
+    EOT
   }
 }
 
-# Grant public access to the bucket contents
-resource "google_storage_bucket_iam_binding" "public" {
-  bucket = google_storage_bucket.static_site.name
-
-  role = "roles/storage.objectViewer"
-  members = [
-    "allUsers",
-  ]
+output "instance_name" {
+  value = google_compute_instance.default.name
 }
 
-# Output the bucket URL
-output "bucket_url" {
-  value = "https://storage.googleapis.com/${google_storage_bucket.static_site.name}"
+output "instance_external_ip" {
+  value = google_compute_instance.default.network_interface[0].access_config[0].nat_ip
 }
