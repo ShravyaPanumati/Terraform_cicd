@@ -44,7 +44,6 @@ substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
-  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
 options:
   logging: CLOUD_LOGGING_ONLY
