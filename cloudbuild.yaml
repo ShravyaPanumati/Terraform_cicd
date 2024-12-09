@@ -44,14 +44,14 @@ steps:
         apt-get update && apt-get install -y jq
         
         # Get external IP from Terraform output
-        EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
+        echo 'EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)'
         
         # Check if EXTERNAL_IP is empty
-        if [ -z "$EXTERNAL_IP" ]; then
+        if [ -z "EXTERNAL_IP" ]; then
           echo "Error: External IP is null or empty!"
         else
-          echo "External IP: $EXTERNAL_IP"
-          echo "Testing application accessibility: http://$EXTERNAL_IP"
+          echo "External IP: EXTERNAL_IP"
+          echo "Testing application accessibility: http://EXTERNAL_IP"
           
           # Test application availability with curl
           curl -I http://$EXTERNAL_IP
