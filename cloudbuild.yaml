@@ -15,15 +15,16 @@ steps:
   ]
   dir: "terraform"
 
-# Step 3: Use substitution for instance name and external IP
+# Step 3: Retrieve the instance name and external IP from Terraform outputs
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-instance-details"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      INSTANCE_NAME=${_INSTANCE_NAME}  # Use substitution for instance name
-      EXTERNAL_IP="35.224.123.45"  # Hardcoded external IP (you can replace this with your actual IP)
+      # Get the instance name and external IP using Terraform output
+      INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
+      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
 
       # Save the values to files
       echo $INSTANCE_NAME > instance_name.txt
@@ -38,15 +39,12 @@ steps:
     - |
       EXTERNAL_IP=$(cat external_ip.txt)
       echo "Your application is accessible at: http://$EXTERNAL_IP"
-      
-      # Optional: Make a request to the external IP to verify if the application is up
       curl -I http://$EXTERNAL_IP
 
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
-  _INSTANCE_NAME: "flask-app"  # Define the instance name substitution
 
 options:
   logging: CLOUD_LOGGING_ONLY
