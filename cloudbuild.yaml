@@ -14,6 +14,8 @@ steps:
       - "-var"
       - "zone=$_ZONE"
       - "-var"
+      - "region=$_REGION"
+      - "-var"
       - "bucket_name=$_BUCKET_NAME"  # Add bucket_name here as well
     dir: "terraform"
 
