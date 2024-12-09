@@ -48,6 +48,7 @@ resource "google_compute_firewall" "default" {
   network = google_compute_network.default.name
 
   allow {
+    protocol = "tcp"
     ports = ["80"]
   }
 
