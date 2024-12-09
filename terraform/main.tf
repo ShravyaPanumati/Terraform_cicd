@@ -1,53 +1,47 @@
-steps:
-# Step 1: Initialize Terraform
-- name: "hashicorp/terraform"
-  args: ["init"]
-  dir: "terraform"
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
 
-# Step 2: Apply Terraform configuration
-- name: "hashicorp/terraform"
-  args: [
-    "apply",
-    "-auto-approve",
-    "-var", "project_id=$_PROJECT_ID",
-    "-var", "region=$_REGION",
-    "-var", "zone=$_ZONE"
-  ]
-  dir: "terraform"
+resource "google_compute_network" "default" {
+  name = "flask-network"
+}
 
-# Step 3: Retrieve the instance name and external IP from Terraform outputs
-- name: "gcr.io/cloud-builders/gcloud"
-  id: "get-instance-details"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      # Get the instance name and external IP using Terraform output
-      INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
-      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
+resource "google_compute_instance" "default" {
+  name         = "flask-app"
+  machine_type = "e2-micro"
+  zone         = var.zone
 
-      # Save the values to files
-      echo $INSTANCE_NAME > instance_name.txt
-      echo $EXTERNAL_IP > external_ip.txt
+  boot_disk {
+    initialize_params {
+      image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
+    }
+  }
 
-# Step 4: Display the application URL in build logs
-- name: "gcr.io/cloud-builders/curl"
-  id: "test-application"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      EXTERNAL_IP=$(cat external_ip.txt)
-      echo "Your application is accessible at: http://$EXTERNAL_IP"
-      curl -I http://$EXTERNAL_IP
+  network_interface {
+    network = google_compute_network.default.name
+    access_config {} # Enable external access
+  }
 
-substitutions:
-  _PROJECT_ID: "strategic-reef-435523-j1"
-  _REGION: "us-central1"
-  _ZONE: "us-central1-a"
-  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
+  metadata = {
+    startup-script = <<EOT
+      #! /bin/bash
+      sudo apt-get update
+      sudo apt-get install -y python3 python3-pip
+      # Update this path to where the actual requirements.txt will be
+      pip3 install -r /path/to/requirements.txt
+      python3 /path/to/run.py
+    EOT
+  }
+}
 
-options:
-  logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8"
-timeout: "1200s"
+output "instance_name" {
+  description = "The name of the Compute Engine instance"
+  value       = google_compute_instance.default.name
+}
+
+output "instance_external_ip" {
+  description = "The external IP address of the Compute Engine instance"
+  value       = google_compute_instance.default.network_interface[0].access_config[0].nat_ip
+}
