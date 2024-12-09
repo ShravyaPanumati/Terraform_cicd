@@ -1,66 +1,58 @@
 steps:
-  # Step 1: Initialize Terraform
+  # Step 1: Initialize and apply Terraform
   - name: "hashicorp/terraform"
     args: ["init"]
     dir: "terraform"
 
-  # Step 2: Apply Terraform configuration
   - name: "hashicorp/terraform"
     args: [
       "apply",
       "-auto-approve",
       "-var", "project_id=$_PROJECT_ID",
-      "-var", "region=$_REGION",
-      "-var", "zone=$_ZONE"
+      "-var", "region=$_REGION"
     ]
     dir: "terraform"
 
-  # Step 3: Debug Terraform Outputs to check instance name and IP
+  # Step 2: Upload application to GCS bucket
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
+
+  # Step 3: Deploy application on Compute Engine instance
   - name: "gcr.io/cloud-builders/gcloud"
-    id: "debug-terraform-outputs"
+    id: "deploy-app"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        echo "Terraform Outputs:"
-        terraform -chdir=terraform output instance_name
-        terraform -chdir=terraform output instance_external_ip
-
-  # Step 4: Wait for the instance to be created and retrieve details
-  - name: "gcr.io/cloud-builders/gcloud"
-    id: "get-instance-details"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        # Wait for the instance to be fully created
-        sleep 30
-
-        # Get the instance name and external IP from Terraform outputs
-        INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
-        EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
-
-        # Save the values to files
-        echo $INSTANCE_NAME > instance_name.txt
-        echo $EXTERNAL_IP > external_ip.txt
-
-  # Step 5: Display the application URL in build logs
-  - name: "gcr.io/cloud-builders/curl"
-    id: "test-application"
-    entrypoint: "bash"
-    args:
-      - "-c"
-      - |
-        EXTERNAL_IP=$(cat external_ip.txt)
-        echo "Your application is accessible at: http://$EXTERNAL_IP"
+        # Retrieve instance name and external IP
+        INSTANCE_NAME="flask-app"  # Hardcoded or fetched from Terraform output
+        ZONE="us-central1-a"  # Ensure it matches the instance zone
         
-        # Optional: Make a request to the external IP to verify if the application is up
+        # Expose instance to the internet via a firewall rule for HTTP traffic
+        gcloud compute firewall-rules create allow-http \
+          --project=$_PROJECT_ID \
+          --allow tcp:80 \
+          --target-tags=http-server \
+          --network=default \
+          --direction=INGRESS
+
+        # Get the external IP address of the Compute Engine instance
+        EXTERNAL_IP=$(gcloud compute instances describe $INSTANCE_NAME \
+          --project=$_PROJECT_ID \
+          --zone=$ZONE \
+          --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
+
+        # Display the application URL
+        echo "Your application is accessible at: http://$EXTERNAL_IP"
+
+        # Optional: Verify the application is accessible
         curl -I http://$EXTERNAL_IP
 
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
+  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
 options:
   logging: CLOUD_LOGGING_ONLY
