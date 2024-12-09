@@ -50,6 +50,7 @@ steps:
           echo "Testing application accessibility: http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
         # Test application availability with curl
         curl -I http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
+        fi
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
   _REGION: "us-central1"                   # Define your region
