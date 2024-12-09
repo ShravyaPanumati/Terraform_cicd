@@ -44,7 +44,7 @@ steps:
         apt-get update && apt-get install -y jq
         
         # Get external IP from Terraform output
-        echo 'EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)'
+        EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
         
         # Check if EXTERNAL_IP is empty
         if [ -z "$EXTERNAL_IP" ]; then
