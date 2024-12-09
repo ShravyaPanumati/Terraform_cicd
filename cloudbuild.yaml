@@ -48,7 +48,7 @@ substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
-  _INSTANCE_NAME: "flask-app"  # Replace with your actual instance name
+  # Remove EXTERNAL_IP from here, since it's not a valid substitution
 
 options:
   logging: CLOUD_LOGGING_ONLY
