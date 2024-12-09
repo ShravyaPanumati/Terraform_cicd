@@ -51,8 +51,10 @@ resource "google_compute_firewall" "default" {
     protocol = "tcp"
     ports = ["80"]
   }
-
-  target_tags = ["http-server"]
+  direction = "INGRESS"
+  priority  = 1000
+  target_tags = ["flask-app"]
+ 
 
   source_ranges = ["0.0.0.0/0"]  # Allow traffic from any IP
 }
