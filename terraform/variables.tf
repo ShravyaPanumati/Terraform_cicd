@@ -1,17 +1,10 @@
-# variables.tf
-
 variable "project_id" {
-  description = "The Google Cloud project ID"
+  description = "The GCP Project ID"
   type        = string
 }
 
 variable "region" {
-  description = "The region for resources"
+  description = "The GCP region"
   type        = string
-}
-
-variable "zone" {
-  description = "The zone where resources will be created"
-  type        = string
-  default     = "us-central1-a"  # Set a default value if desired
+  default     = "us-central1"
 }
