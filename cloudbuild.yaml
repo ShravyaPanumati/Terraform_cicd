@@ -1,23 +1,25 @@
 steps:
-# Step 1: Initialize and apply Terraform
+# Step 1: Initialize Terraform
 - name: "hashicorp/terraform"
   args: ["init"]
   dir: "terraform"
 
+# Step 2: Apply Terraform configuration
 - name: "hashicorp/terraform"
   args: [
     "apply",
     "-auto-approve",
     "-var", "project_id=$_PROJECT_ID",
-    "-var", "region=$_REGION"
+    "-var", "region=$_REGION",
+    "-var", "zone=$_ZONE"
   ]
   dir: "terraform"
 
-# Step 2: Upload application to GCS bucket
+# Step 3: Upload application to GCS bucket
 - name: "gcr.io/cloud-builders/gsutil"
   args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
 
-# Step 3: Retrieve Compute Engine instance external IP
+# Step 4: Retrieve Compute Engine instance external IP
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-external-ip"
   entrypoint: "bash"
@@ -25,12 +27,13 @@ steps:
     - "-c"
     - |
       INSTANCE_NAME=$(terraform output -raw instance_name)  # Ensure Terraform outputs the instance name
-      gcloud compute instances describe "$INSTANCE_NAME" \
+      EXTERNAL_IP=$(gcloud compute instances describe "$INSTANCE_NAME" \
         --project=$_PROJECT_ID \
         --zone=$_ZONE \
-        --format="get(networkInterfaces[0].accessConfigs[0].natIP)" > external_ip.txt
+        --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
+      echo "External IP Address: $EXTERNAL_IP" > external_ip.txt
 
-# Step 4: Display external IP (for monitoring in Cloud Build logs)
+# Step 5: Display the application URL in build logs
 - name: "gcr.io/cloud-builders/curl"
   id: "test-application"
   entrypoint: "bash"
@@ -38,7 +41,7 @@ steps:
     - "-c"
     - |
       EXTERNAL_IP=$(cat external_ip.txt)
-      echo "Application is available at http://$EXTERNAL_IP"
+      echo "Your application is now accessible at: http://$EXTERNAL_IP"
       curl -I http://$EXTERNAL_IP
 
 substitutions:
