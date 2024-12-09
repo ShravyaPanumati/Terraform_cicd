@@ -26,7 +26,7 @@ steps:
   args:
     - "-c"
     - |
-      INSTANCE_NAME=$(terraform output -raw instance_name)  # Ensure Terraform outputs the instance name
+      INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
       EXTERNAL_IP=$(gcloud compute instances describe "$INSTANCE_NAME" \
         --project=$_PROJECT_ID \
         --zone=$_ZONE \
