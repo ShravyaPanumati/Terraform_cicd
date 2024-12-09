@@ -5,13 +5,18 @@ steps:
     args: ["init"]
     dir: "terraform"
 
-  # Step 2: Apply Terraform configuration
+  # Step 2: Apply Terraform configuration, pass variables
   - name: "hashicorp/terraform"
     id: "terraform-apply"
-    args: [
-      "apply",
-      "-auto-approve"
-    ]
+    args:
+      - "apply"
+      - "-auto-approve"
+      - "-var"
+      - "project_id=$_PROJECT_ID"
+      - "-var"
+      - "region=$_REGION"
+      - "-var"
+      - "zone=$_ZONE"
     dir: "terraform"
 
   # Step 3: Retrieve Terraform outputs
@@ -36,6 +41,11 @@ steps:
 
         # Test application availability with curl
         curl -I http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
+
+substitutions:
+  _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
+  _REGION: "us-central1"                   # Define your region
+  _ZONE: "us-central1-a"                   # Define your zone
 
 options:
   logging: CLOUD_LOGGING_ONLY
