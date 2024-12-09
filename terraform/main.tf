@@ -28,10 +28,13 @@ resource "google_compute_instance" "default" {
     startup-script = <<EOT
       #! /bin/bash
       sudo apt-get update
-      sudo apt-get install -y python3 python3-pip
-      # Update this path to where the actual requirements.txt will be
-      pip3 install -r /path/to/requirements.txt
-      python3 /path/to/run.py
+      sudo apt-get install -y python3 python3-pip nginx google-cloud-sdk
+
+      # Download index.html from GCS
+      gsutil cp gs://${var.bucket_name}/index.html /var/www/html/index.html
+
+      # Start Nginx
+      sudo systemctl restart nginx
     EOT
   }
 }
