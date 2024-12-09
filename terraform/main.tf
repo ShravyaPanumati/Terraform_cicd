@@ -25,7 +25,7 @@ resource "google_compute_instance" "default" {
   }
 
   metadata = {
-    startup-script = <<EOT
+    startup-script = <<-EOT
       #! /bin/bash
       sudo apt-get update
       sudo apt-get install -y python3 python3-pip nginx google-cloud-sdk
@@ -33,8 +33,25 @@ resource "google_compute_instance" "default" {
       # Download index.html from GCS
       gsutil cp gs://${var.bucket_name}/index.html /var/www/html/index.html
 
-      # Start Nginx
+      # Restart Nginx
       sudo systemctl restart nginx
+
+      # Ensure Nginx is enabled to start on boot
+      sudo systemctl enable nginx
     EOT
   }
+}
+
+# Add firewall rule to allow HTTP traffic (port 80)
+resource "google_compute_firewall" "default" {
+  name    = "allow-http"
+  network = google_compute_network.default.name
+
+  allow {
+    ports = ["80"]
+  }
+
+  target_tags = ["http-server"]
+
+  source_ranges = ["0.0.0.0/0"]  # Allow traffic from any IP
 }
