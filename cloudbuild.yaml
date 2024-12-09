@@ -15,19 +15,20 @@ steps:
   ]
   dir: "terraform"
 
-# Step 3: Retrieve Compute Engine instance external IP
+# Step 3: Retrieve the instance name and external IP from Terraform outputs
 - name: "gcr.io/cloud-builders/gcloud"
-  id: "get-external-ip"
+  id: "get-instance-details"
   entrypoint: "bash"
   args:
     - "-c"
     - |
+      # Get the instance name and external IP using Terraform output
       INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
-      EXTERNAL_IP=$(gcloud compute instances describe "$INSTANCE_NAME" \
-        --project=$_PROJECT_ID \
-        --zone=$_ZONE \
-        --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
-      echo "Application External IP Address: $EXTERNAL_IP" > external_ip.txt
+      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
+
+      # Save the values to files
+      echo $INSTANCE_NAME > instance_name.txt
+      echo $EXTERNAL_IP > external_ip.txt
 
 # Step 4: Display the application URL in build logs
 - name: "gcr.io/cloud-builders/curl"
@@ -44,6 +45,7 @@ substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
+  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
 options:
   logging: CLOUD_LOGGING_ONLY
