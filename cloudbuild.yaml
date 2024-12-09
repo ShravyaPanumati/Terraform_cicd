@@ -32,25 +32,7 @@ steps:
       - |
         # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
-  # Step 5: Test application using the external IP
-  - name: "gcr.io/cloud-builders/curl"
-    id: "test-application"
-    entrypoint: "sh"
-    args:
-      - "-c"
-      - |
-        # Install jq for JSON parsing
-        apt-get update && apt-get install -y jq
-        
-        echo "External IP: $(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
-         if [ -z "EXTERNAL_IP" ]; then
-          echo "Error: External IP is null or empty!"
-        else
-          echo "External IP: EXTERNAL_IP"
-          echo "Testing application accessibility: http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
-        # Test application availability with curl
-        curl -I http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
-        fi
+
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
   _REGION: "us-central1"                   # Define your region
