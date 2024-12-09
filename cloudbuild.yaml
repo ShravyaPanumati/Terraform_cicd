@@ -29,13 +29,16 @@ steps:
         # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
 
-  # Step 4: Test application using the external IP (use sh instead of bash)
+  # Step 4: Test application using the external IP
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
     entrypoint: "sh"
     args:
       - "-c"
       - |
+        # Install jq for JSON parsing
+        apt-get update && apt-get install -y jq
+        
         echo "External IP: $(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
         echo "Testing application accessibility: http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
 
