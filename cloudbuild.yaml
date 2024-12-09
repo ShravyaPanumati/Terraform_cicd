@@ -32,7 +32,6 @@ steps:
       - |
         # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
-
   # Step 5: Test application using the external IP
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
@@ -43,27 +42,24 @@ steps:
         # Install jq for JSON parsing
         apt-get update && apt-get install -y jq
         
-        # Get external IP from Terraform output
-        EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
-        
-        # Check if EXTERNAL_IP is empty
-        if [ -z "$EXTERNAL_IP" ]; then
+        echo "External IP: $(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
+         if [ -z "EXTERNAL_IP" ]; then
           echo "Error: External IP is null or empty!"
         else
-          echo "External IP: $EXTERNAL_IP"
-          echo "Testing application accessibility: http://$EXTERNAL_IP"
-          
-          # Test application availability with curl
-          curl -I http://$EXTERNAL_IP
-        fi
-
+          echo "External IP: EXTERNAL_IP"
+          echo "Testing application accessibility: http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
+        # Test application availability with curl
+        curl -I http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
   _REGION: "us-central1"                   # Define your region
-  _ZONE: "us-central1-a"                   # Define the zone
+  _ZONE: "us-central1-a" 
   _BUCKET_NAME: "strategic-reef-435523-j1-static-site"  # Your GCS bucket name
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8"  # Updated machine type
-timeout: "1200s"  # Timeout set for 20 minutes
+0 commit comments
+Comments
+0
+ (0)
+Comment
