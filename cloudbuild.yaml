@@ -13,7 +13,7 @@ steps:
   ]
   dir: "terraform"
 
-# Step 2: Upload application to GCS bucket
+# Step 2: Upload application to the GCS bucket
 - name: "gcr.io/cloud-builders/gsutil"
   args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
 
