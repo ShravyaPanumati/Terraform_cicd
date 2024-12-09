@@ -1,44 +1,53 @@
-provider "google" {
-  project = var.project_id
-  region  = var.region
-  zone    = var.zone
-}
+steps:
+# Step 1: Initialize Terraform
+- name: "hashicorp/terraform"
+  args: ["init"]
+  dir: "terraform"
 
-resource "google_compute_network" "default" {
-  name = "flask-network"
-}
+# Step 2: Apply Terraform configuration
+- name: "hashicorp/terraform"
+  args: [
+    "apply",
+    "-auto-approve",
+    "-var", "project_id=$_PROJECT_ID",
+    "-var", "region=$_REGION",
+    "-var", "zone=$_ZONE"
+  ]
+  dir: "terraform"
 
-resource "google_compute_instance" "default" {
-  name         = "flask-app"
-  machine_type = "e2-micro"
-  zone         = var.zone
+# Step 3: Retrieve the instance name and external IP from Terraform outputs
+- name: "gcr.io/cloud-builders/gcloud"
+  id: "get-instance-details"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      # Get the instance name and external IP using Terraform output
+      INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
+      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
 
-  boot_disk {
-    initialize_params {
-      image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230509"
-    }
-  }
+      # Save the values to files
+      echo $INSTANCE_NAME > instance_name.txt
+      echo $EXTERNAL_IP > external_ip.txt
 
-  network_interface {
-    network = google_compute_network.default.name
-    access_config {} # Enable external access
-  }
+# Step 4: Display the application URL in build logs
+- name: "gcr.io/cloud-builders/curl"
+  id: "test-application"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      EXTERNAL_IP=$(cat external_ip.txt)
+      echo "Your application is accessible at: http://$EXTERNAL_IP"
+      curl -I http://$EXTERNAL_IP
 
-  metadata = {
-    startup-script = <<EOT
-      #! /bin/bash
-      sudo apt-get update
-      sudo apt-get install -y python3 python3-pip
-      pip3 install -r /path/to/requirements.txt
-      python3 run.py
-    EOT
-  }
-}
+substitutions:
+  _PROJECT_ID: "strategic-reef-435523-j1"
+  _REGION: "us-central1"
+  _ZONE: "us-central1-a"
+  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
-output "instance_name" {
-  value = google_compute_instance.default.name
-}
-
-output "instance_external_ip" {
-  value = google_compute_instance.default.network_interface[0].access_config[0].nat_ip
-}
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: "E2_HIGHCPU_8"
+timeout: "1200s"
