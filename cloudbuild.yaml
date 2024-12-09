@@ -15,11 +15,7 @@ steps:
   ]
   dir: "terraform"
 
-# Step 3: Upload application to GCS bucket
-- name: "gcr.io/cloud-builders/gsutil"
-  args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
-
-# Step 4: Retrieve Compute Engine instance external IP
+# Step 3: Retrieve Compute Engine instance external IP
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-external-ip"
   entrypoint: "bash"
@@ -31,9 +27,9 @@ steps:
         --project=$_PROJECT_ID \
         --zone=$_ZONE \
         --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
-      echo "External IP Address: $EXTERNAL_IP" > external_ip.txt
+      echo "Application External IP Address: $EXTERNAL_IP" > external_ip.txt
 
-# Step 5: Display the application URL in build logs
+# Step 4: Display the application URL in build logs
 - name: "gcr.io/cloud-builders/curl"
   id: "test-application"
   entrypoint: "bash"
@@ -41,7 +37,7 @@ steps:
     - "-c"
     - |
       EXTERNAL_IP=$(cat external_ip.txt)
-      echo "Your application is now accessible at: http://$EXTERNAL_IP"
+      echo "Your application is accessible at: http://$EXTERNAL_IP"
       curl -I http://$EXTERNAL_IP
 
 substitutions:
