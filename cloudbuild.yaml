@@ -44,7 +44,7 @@ steps:
         apt-get update && apt-get install -y jq
 
         # Retrieve and display the external IP from Terraform output
-        EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
+        echo 'EXTERNAL_IP=$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)'
         
         # Check if EXTERNAL_IP is valid before using curl
         if [ -z "$EXTERNAL_IP" ]; then
