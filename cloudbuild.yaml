@@ -19,20 +19,20 @@ steps:
       - "zone=$_ZONE"
     dir: "terraform"
 
-  # Step 3: Retrieve Terraform outputs
+  # Step 3: Retrieve Terraform outputs (use sh instead of bash)
   - name: "hashicorp/terraform"
     id: "terraform-output"
-    entrypoint: "bash"
+    entrypoint: "sh"
     args:
       - "-c"
       - |
         # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
 
-  # Step 4: Test application using the external IP
+  # Step 4: Test application using the external IP (use sh instead of bash)
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
-    entrypoint: "bash"
+    entrypoint: "sh"
     args:
       - "-c"
       - |
