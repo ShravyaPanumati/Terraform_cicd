@@ -1,13 +1,11 @@
 steps:
   # Step 1: Initialize Terraform
   - name: "hashicorp/terraform"
-    id: "terraform-init"
     args: ["init"]
     dir: "terraform"
 
   # Step 2: Apply Terraform configuration, pass variables
   - name: "hashicorp/terraform"
-    id: "terraform-apply"
     args:
       - "apply"
       - "-auto-approve"
@@ -19,7 +17,11 @@ steps:
       - "zone=$_ZONE"
     dir: "terraform"
 
-  # Step 3: Retrieve Terraform outputs (use sh instead of bash)
+  # Step 3: Upload application to GCS bucket
+  - name: "gcr.io/cloud-builders/gsutil"
+    args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
+
+  # Step 4: Retrieve Terraform outputs
   - name: "hashicorp/terraform"
     id: "terraform-output"
     entrypoint: "sh"
@@ -29,7 +31,7 @@ steps:
         # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
 
-  # Step 4: Test application using the external IP
+  # Step 5: Test application using the external IP
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
     entrypoint: "sh"
@@ -48,9 +50,10 @@ steps:
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
   _REGION: "us-central1"                   # Define your region
-  _ZONE: "us-central1-a"                   # Define your zone
+  _ZONE: "us-central1-a" 
+  _BUCKET_NAME: "strategic-reef-435523-j1-static-site"  # Your GCS bucket name
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8"
+  machineType: "E2_HIGHCPU_8"  # Updated machine type
 timeout: "1200s"
