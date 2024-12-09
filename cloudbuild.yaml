@@ -21,24 +21,21 @@ steps:
     args:
       - "-c"
       - |
-        # Export Terraform output to JSON file
+        # Export Terraform output to a JSON file
         terraform output -json > /workspace/terraform_output.json
 
-  # Step 4: Test the application with the retrieved external IP
+  # Step 4: Test application using the external IP
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        # Extract the external IP from the Terraform output JSON
-        TERRAFORM_EXTERNAL_IP=$(jq -r '.external_ip.value' /workspace/terraform_output.json)
-        
-        echo "External IP: $TERRAFORM_EXTERNAL_IP"
-        echo "Testing application accessibility: http://$TERRAFORM_EXTERNAL_IP"
+        echo "External IP: $(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
+        echo "Testing application accessibility: http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)"
 
         # Test application availability with curl
-        curl -I http://$TERRAFORM_EXTERNAL_IP
+        curl -I http://$(jq -r '.instance_external_ip.value' /workspace/terraform_output.json)
 
 options:
   logging: CLOUD_LOGGING_ONLY
