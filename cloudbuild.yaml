@@ -25,7 +25,11 @@ steps:
       "-json"
     ]
     dir: "terraform"
-    output: "/workspace/terraform_output.json"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        terraform output -json > /workspace/terraform_output.json
 
   # Step 4: Use the external IP in subsequent steps (e.g., testing accessibility)
   - name: "gcr.io/cloud-builders/curl"
@@ -50,5 +54,4 @@ substitutions:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8"
-timeout: "1200s"
+  machineType:
