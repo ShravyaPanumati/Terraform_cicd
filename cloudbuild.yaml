@@ -15,6 +15,8 @@ steps:
       - "region=$_REGION"
       - "-var"
       - "zone=$_ZONE"
+      - "-var"
+      - "bucket_name=$_BUCKET_NAME"  # Add bucket_name here as well
     dir: "terraform"
 
   # Step 3: Upload application to GCS bucket
