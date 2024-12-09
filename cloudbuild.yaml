@@ -15,15 +15,15 @@ steps:
   ]
   dir: "terraform"
 
-# Step 3: Hardcode the instance name and external IP
+# Step 3: Use substitution for instance name and external IP
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-instance-details"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      INSTANCE_NAME="flask-app"  # Hardcoded instance name
-      EXTERNAL_IP="35.224.123.45"  # Hardcoded external IP
+      INSTANCE_NAME=${_INSTANCE_NAME}  # Use substitution for instance name
+      EXTERNAL_IP="35.224.123.45"  # Hardcoded external IP (you can replace this with your actual IP)
 
       # Save the values to files
       echo $INSTANCE_NAME > instance_name.txt
@@ -46,6 +46,7 @@ substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
   _ZONE: "us-central1-a"
+  _INSTANCE_NAME: "flask-app"  # Define the instance name substitution
 
 options:
   logging: CLOUD_LOGGING_ONLY
