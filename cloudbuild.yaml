@@ -13,16 +13,41 @@ steps:
   ]
   dir: "terraform"
 
-# Step 2: Upload application to the GCS bucket
+# Step 2: Upload application to GCS bucket
 - name: "gcr.io/cloud-builders/gsutil"
   args: ["-m", "rsync", "-r", "./app", "gs://${_BUCKET_NAME}/"]
+
+# Step 3: Retrieve Compute Engine instance external IP
+- name: "gcr.io/cloud-builders/gcloud"
+  id: "get-external-ip"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      INSTANCE_NAME=$(terraform output -raw instance_name)  # Ensure Terraform outputs the instance name
+      gcloud compute instances describe "$INSTANCE_NAME" \
+        --project=$_PROJECT_ID \
+        --zone=$_ZONE \
+        --format="get(networkInterfaces[0].accessConfigs[0].natIP)" > external_ip.txt
+
+# Step 4: Display external IP (for monitoring in Cloud Build logs)
+- name: "gcr.io/cloud-builders/curl"
+  id: "test-application"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      EXTERNAL_IP=$(cat external_ip.txt)
+      echo "Application is available at http://$EXTERNAL_IP"
+      curl -I http://$EXTERNAL_IP
 
 substitutions:
   _PROJECT_ID: "strategic-reef-435523-j1"
   _REGION: "us-central1"
+  _ZONE: "us-central1-a"
   _BUCKET_NAME: "strategic-reef-435523-j1-static-site"
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: "E2_HIGHCPU_8" # Updated machine type
+  machineType: "E2_HIGHCPU_8"
 timeout: "1200s"
