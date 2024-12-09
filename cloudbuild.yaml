@@ -14,27 +14,27 @@ steps:
     ]
     dir: "terraform"
 
-  # Step 3: Retrieve Terraform outputs (e.g., external IP of the newly created VM)
+  # Step 3: Retrieve Terraform outputs
   - name: "hashicorp/terraform"
     id: "terraform-output"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        # Save Terraform output as JSON to a file
+        # Export Terraform output to JSON file
         terraform output -json > /workspace/terraform_output.json
 
-  # Step 4: Use the external IP in subsequent steps (e.g., testing accessibility)
+  # Step 4: Test the application with the retrieved external IP
   - name: "gcr.io/cloud-builders/curl"
     id: "test-application"
     entrypoint: "bash"
     args:
       - "-c"
       - |
-        # Read the external IP from Terraform output JSON
+        # Extract the external IP from the Terraform output JSON
         TERRAFORM_EXTERNAL_IP=$(jq -r '.external_ip.value' /workspace/terraform_output.json)
         
-        echo "External IP from Terraform: $TERRAFORM_EXTERNAL_IP"
+        echo "External IP: $TERRAFORM_EXTERNAL_IP"
         echo "Testing application accessibility: http://$TERRAFORM_EXTERNAL_IP"
 
         # Test application availability with curl
