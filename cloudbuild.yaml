@@ -1,48 +1,52 @@
 steps:
-# Step 1: Initialize Terraform
-- name: "hashicorp/terraform"
-  args: ["init"]
-  dir: "terraform"
+  # Step 1: Initialize Terraform
+  - name: "hashicorp/terraform"
+    id: "terraform-init"
+    args: ["init"]
+    dir: "terraform"
 
-# Step 2: Apply Terraform configuration
-- name: "hashicorp/terraform"
-  args: [
-    "apply",
-    "-auto-approve",
-    "-var", "project_id=strategic-reef-435523-j1",  # Directly pass your project ID
-    "-var", "region=us-central1",                    # Directly pass your region
-    "-var", "zone=us-central1-a"                     # Directly pass your zone
-  ]
-  dir: "terraform"
+  # Step 2: Apply Terraform configuration
+  - name: "hashicorp/terraform"
+    id: "terraform-apply"
+    args: [
+      "apply",
+      "-auto-approve",
+      "-var", "project_id=$_PROJECT_ID",
+      "-var", "region=$_REGION",
+      "-var", "zone=$_ZONE"
+    ]
+    dir: "terraform"
 
-# Step 3: Retrieve the external IP using gcloud command
-- name: "gcr.io/cloud-builders/gcloud"
-  id: "get-instance-details"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      # Retrieve the external IP of the VM using gcloud command
-      EXTERNAL_IP=$(gcloud compute instances describe your-instance-name \  # Replace with your actual instance name
-        --project=strategic-reef-435523-j1 \  # Directly use your project ID
-        --zone=us-central1-a \                 # Directly use your zone
-        --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-      # Save the external IP to a file
-      echo $EXTERNAL_IP > /workspace/external_ip.txt
-      # Optionally, print the external IP for debugging
-      echo "Retrieved External IP: $EXTERNAL_IP"
+  # Step 3: Retrieve Terraform outputs (e.g., external IP of the newly created VM)
+  - name: "hashicorp/terraform"
+    id: "terraform-output"
+    args: [
+      "output",
+      "-json"
+    ]
+    dir: "terraform"
+    output: "/workspace/terraform_output.json"
 
-# Step 4: Use the external IP in a different way (e.g., curl)
-- name: "gcr.io/cloud-builders/curl"
-  id: "test-application"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      # Read the external IP from the file and use it in a curl command
-      EXTERNAL_IP=$(cat /workspace/external_ip.txt)
-      echo "Your application is accessible at: http://$EXTERNAL_IP"
-      curl -I http://$EXTERNAL_IP
+  # Step 4: Use the external IP in subsequent steps (e.g., testing accessibility)
+  - name: "gcr.io/cloud-builders/curl"
+    id: "test-application"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        # Read the external IP from Terraform output JSON
+        TERRAFORM_EXTERNAL_IP=$(jq -r '.external_ip.value' /workspace/terraform_output.json)
+        
+        echo "External IP from Terraform: $TERRAFORM_EXTERNAL_IP"
+        echo "Testing application accessibility: http://$TERRAFORM_EXTERNAL_IP"
+
+        # Test application availability with curl
+        curl -I http://$TERRAFORM_EXTERNAL_IP
+
+substitutions:
+  _PROJECT_ID: "strategic-reef-435523-j1"  # Replace with your actual GCP project ID
+  _REGION: "us-central1"                   # Define your region
+  _ZONE: "us-central1-a"                   # Define your zone
 
 options:
   logging: CLOUD_LOGGING_ONLY
