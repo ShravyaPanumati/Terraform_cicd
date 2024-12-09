@@ -9,44 +9,40 @@ steps:
   args: [
     "apply",
     "-auto-approve",
-    "-var", "project_id=$_PROJECT_ID",
-    "-var", "region=$_REGION",
-    "-var", "zone=$_ZONE"
+    "-var", "project_id=strategic-reef-435523-j1",  # Directly pass your project ID
+    "-var", "region=us-central1",                    # Directly pass your region
+    "-var", "zone=us-central1-a"                     # Directly pass your zone
   ]
   dir: "terraform"
 
-# Step 3: Hardcode the instance name and external IP (Retrieve directly from Terraform outputs)
+# Step 3: Retrieve the external IP using gcloud command
 - name: "gcr.io/cloud-builders/gcloud"
   id: "get-instance-details"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      INSTANCE_NAME="flask-app"  # Hardcoded instance name
-      # Use Terraform output to get the external IP
-      EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
+      # Retrieve the external IP of the VM using gcloud command
+      EXTERNAL_IP=$(gcloud compute instances describe <INSTANCE_NAME> \
+        --project=strategic-reef-435523-j1 \  # Directly use your project ID
+        --zone=us-central1-a \                 # Directly use your zone
+        --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+      # Save the external IP to a file
+      echo $EXTERNAL_IP > /workspace/external_ip.txt
+      # Optionally, print the external IP for debugging
+      echo "Retrieved External IP: $EXTERNAL_IP"
 
-      # Save the values to files
-      echo $INSTANCE_NAME > instance_name.txt
-      echo $EXTERNAL_IP > external_ip.txt
-
-# Step 4: Display the application URL in build logs
+# Step 4: Use the external IP in a different way (e.g., curl)
 - name: "gcr.io/cloud-builders/curl"
   id: "test-application"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      EXTERNAL_IP=$(cat external_ip.txt)
+      # Read the external IP from the file and use it in a curl command
+      EXTERNAL_IP=$(cat /workspace/external_ip.txt)
       echo "Your application is accessible at: http://$EXTERNAL_IP"
-      
-      # Optional: Make a request to the external IP to verify if the application is up
       curl -I http://$EXTERNAL_IP
-
-substitutions:
-  _PROJECT_ID: "strategic-reef-435523-j1"
-  _REGION: "us-central1"
-  _ZONE: "us-central1-a"
 
 options:
   logging: CLOUD_LOGGING_ONLY
