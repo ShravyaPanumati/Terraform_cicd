@@ -23,11 +23,11 @@ steps:
     - "-c"
     - |
       # Get the instance name and external IP using Terraform output
-      INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
+      #INSTANCE_NAME=$(terraform -chdir=terraform output -raw instance_name)
       EXTERNAL_IP=$(terraform -chdir=terraform output -raw instance_external_ip)
 
       # Save the values to files
-      echo $INSTANCE_NAME > /workspace/instance_name.txt
+      #echo $INSTANCE_NAME > /workspace/instance_name.txt
       echo $EXTERNAL_IP > /workspace/external_ip.txt
 
 # Step 4: Display the application URL in build logs
